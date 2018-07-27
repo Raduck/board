@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="upload">
+
+	<insert id="uploadFile" parameterType="ulVo">
+		insert into upload (file_id,wr_id,file_upnm,file_path,file_nm) 
+		values (file_seq.nextval,#{wr_id},#{file_upnm},#{file_path},#{file_nm})
+	</insert>
+
+	<select id="selectAllFile" parameterType="int" resultType="ulVo">
+		select * from upload where wr_id=#{wr_id}
+	</select>
+	
+	<delete id="deleteFile" parameterType="int">
+		delete from upload where wr_id=#{wr_id}
+	</delete>
+</mapper>

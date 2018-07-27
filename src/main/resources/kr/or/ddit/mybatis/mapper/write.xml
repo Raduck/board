@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="write">
+
+	<select id="getWriteTitle" parameterType="int" resultType="String">
+		select wr_title from write where board_id = #{board_id}
+	</select>
+
+	<select id="getAllWrite" parameterType="int" resultType="writeVo">
+		select * from write where board_id = #{board_id}
+	</select>
+	
+	<!-- 게시글 페이징 조회 -->
+	<select id="getWritePageList" resultType="writeVo" parameterType="map">
+	SELECT b.wr_id
+            ,LPAD('└', (lv-1)*4,'　')||b.wr_title AS wr_title
+            ,b.board_id
+            ,b.wr_content
+            ,b.std_id
+            ,b.wr_dl
+            ,b.wr_date
+            ,b.wr_pno
+            ,b.wr_gno
+            ,lv
+      FROM  (SELECT a.*
+                 ,ROWNUM rn 
+                 
+                 FROM (SELECT write.* ,level lv                          
+                        FROM write
+                        WHERE  board_id = #{board_id}
+                       
+                        START WITH wr_pno IS NULL
+                        CONNECT BY PRIOR wr_id = wr_pno
+                        ORDER SIBLINGS BY wr_gno desc               
+                       ) a
+                )b
+     where  rn BETWEEN (#{page}-1)*#{pageSize}+1 AND #{page}*#{pageSize}
+	</select>
+	
+	
+	<select id="getWriteTotCnt" resultType="int" parameterType="map">
+		select count(*) from write where board_id=#{board_id}
+	</select>
+	
+	<select id="getWriteDetail" parameterType="int" resultType="writeVo">
+		select * from write where wr_id=#{wr_id}
+	</select>
+	
+	<insert id="insertNewWrite" parameterType="writeVo">
+		insert into write (wr_id,board_id,wr_content,wr_title,wr_date,wr_dl,wr_gno,std_id)
+		 values (write_seq.nextval,
+		 		#{board_id},
+		 		#{wr_content},
+		 		#{wr_title},
+		 		sysdate,
+		 		#{wr_dl},
+		 		gno_seq.nextval,
+		 		#{std_id}
+		 		)
+	</insert>
+	
+	<update id="deleteWrite" parameterType="int">
+		update write set wr_dl='y' where wr_id=#{wr_id}
+	</update>
+	
+	<update id="updateWrite" parameterType="writeVo">
+		update write set wr_content=#{wr_content}, wr_title=#{wr_title} where wr_id=#{wr_id}
+	</update>
+	
+	<insert id="insertReplyWrite" parameterType="writeVo">
+		insert into write (wr_id,board_id,wr_content,wr_title,wr_date,wr_dl,wr_pno,wr_gno,std_id)
+		 values (write_seq.nextval,
+		 		#{board_id},
+		 		#{wr_content},
+		 		#{wr_title},
+		 		sysdate,
+		 		#{wr_dl},
+		 		#{wr_pno},
+		 		#{wr_gno},
+		 		#{std_id}
+		 		)
+	</insert>
+	
+	<select id="selectWr_id" parameterType="writeVo" resultType="int">
+		select wr_id from write where wr_title=#{wr_title} and board_id=#{board_id} and std_id=#{std_id}
+	</select>
+	
+</mapper>
